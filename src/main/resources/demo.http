@@ -1,0 +1,36 @@
+GET localhost:7070/api/routes
+
+### Populate data
+POST localhost:7070/api/trips/populate
+
+###
+GET localhost:7070/api/trips
+
+###
+GET localhost:7070/api/trips/3
+
+###
+POST localhost:7070/api/trips
+Content-Type: "application/json"
+
+{
+    "name": "Trip to Bilka",
+    "price": 802.50,
+    "category": "CITY",
+    "startTime": "14:30",
+    "endTime": "15:45"
+}
+
+###
+PUT localhost:7070/api/trips/3
+Content-Type: "application/json"
+
+{
+    "name": "Trip to the Old City"
+}
+
+###
+DELETE localhost:7070/api/trips/1
+
+###
+GET localhost:7070/api/trips/1/rooms
