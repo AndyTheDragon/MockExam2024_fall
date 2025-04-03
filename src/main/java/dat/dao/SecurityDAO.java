@@ -59,10 +59,10 @@ public class SecurityDAO extends GenericDAO implements ISecurityDAO
     @Override
     public UserAccount addRoleToUser(String username, Roles role)
     {
-        UserAccount foundUser = super.getById(UserAccount.class, username);
-        foundUser.addRole(role);
         try
         {
+            UserAccount foundUser = super.getById(UserAccount.class, username);
+            foundUser.addRole(role);
             foundUser = super.update(foundUser);
             logger.info("Role added to user (username {}, role {})", username, role);
             return foundUser;
@@ -77,10 +77,10 @@ public class SecurityDAO extends GenericDAO implements ISecurityDAO
     @Override
     public UserAccount removeRoleFromUser(String username, Roles role)
     {
-        UserAccount foundUserAccount = super.getById(UserAccount.class, username);
-        foundUserAccount.removeRole(role);
         try
         {
+            UserAccount foundUserAccount = super.getById(UserAccount.class, username);
+            foundUserAccount.removeRole(role);
             foundUserAccount = super.update(foundUserAccount);
             logger.info("Role removed from user (username {}, role {})", username, role);
             return foundUserAccount;
