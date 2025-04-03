@@ -20,7 +20,7 @@ public class GenericDAO implements CrudDAO
         this.emf = emf;
     }
 
-    public <T> T create(T object)
+    public <T> T create(T object)  throws DaoException
     {
         try (EntityManager em = emf.createEntityManager())
         {
@@ -36,7 +36,7 @@ public class GenericDAO implements CrudDAO
         }
     }
 
-    public <T> List<T> create(List<T> objects)
+    public <T> List<T> create(List<T> objects) throws DaoException
     {
         try (EntityManager em = emf.createEntityManager())
         {
@@ -55,7 +55,7 @@ public class GenericDAO implements CrudDAO
         }
     }
 
-    public <T> T getById(Class<T> type, Object id)
+    public <T> T getById(Class<T> type, Object id) throws DaoException
     {
         try (EntityManager em = emf.createEntityManager())
         {
@@ -93,7 +93,7 @@ public class GenericDAO implements CrudDAO
         }
     }
 
-    public <T> T update(T object)
+    public <T> T update(T object) throws DaoException
     {
         try (EntityManager em = emf.createEntityManager())
         {
@@ -109,7 +109,7 @@ public class GenericDAO implements CrudDAO
         }
     }
 
-    public <T> List<T> update(List<T> objects)
+    public <T> List<T> update(List<T> objects) throws DaoException
     {
         try (EntityManager em = emf.createEntityManager())
         {
@@ -129,7 +129,7 @@ public class GenericDAO implements CrudDAO
         }
     }
 
-    public <T> void delete(T object)
+    public <T> void delete(T object) throws DaoException
     {
         try (EntityManager em = emf.createEntityManager())
         {
@@ -144,7 +144,7 @@ public class GenericDAO implements CrudDAO
         }
     }
 
-    public <T> void delete(Class<T> type, Object id)
+    public <T> void delete(Class<T> type, Object id) throws DaoException
     {
         try (EntityManager em = emf.createEntityManager())
         {
