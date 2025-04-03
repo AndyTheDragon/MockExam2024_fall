@@ -93,8 +93,8 @@ public class SecurityController implements ISecurityController
         }
         catch (EntityExistsException e) {
             logger.error("Error registering user", e);
-            //throw new APIException(422, "Could not register user: User already exists", e);
-            ctx.status(HttpStatus.UNPROCESSABLE_CONTENT).json(new ErrorMessage("User already exists " + e.getMessage()));
+            throw new ApiException(422, "Could not register user: User already exists", e);
+            //ctx.status(HttpStatus.UNPROCESSABLE_CONTENT).json(new ErrorMessage("User already exists " + e.getMessage()));
         }
     }
 
@@ -116,14 +116,14 @@ public class SecurityController implements ISecurityController
         // Check that token is present and not malformed, and get the User from the token
         UserDTO verifiedTokenUser = getUserFromToken(ctx);
         if (verifiedTokenUser == null) {
-            throw new UnauthorizedResponse("Invalid user or token"); // UnauthorizedResponse is javalin 6 specific but response is not json!
-//                throw new dat.exceptions.APIException(401, "Invalid user or token");
+            //throw new UnauthorizedResponse("Invalid user or token"); // UnauthorizedResponse is javalin 6 specific but response is not json!
+            throw new ApiException(401, "Invalid user or token");
         }
         ctx.attribute("user", verifiedTokenUser);
 
         if (!userHasAllowedRole(verifiedTokenUser, permittedRoles)) {
-            throw new ForbiddenResponse("User does not have the required role to access this endpoint");
-            // throw new APIException(403, "User does not have the required role to access this endpoint");
+            //throw new ForbiddenResponse("User does not have the required role to access this endpoint");
+            throw new ApiException(403, "User does not have the required role to access this endpoint");
         }
 
     }
