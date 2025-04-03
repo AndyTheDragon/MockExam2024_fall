@@ -85,6 +85,18 @@ class TripRoutesTest
     }
 
     @Test
+    void getById_includeItems()
+    {
+        given()
+                .when()
+                .get("/trips/" + t2.getId() + "?withItems=true")
+                .then()
+                .statusCode(200)
+                .body("name", equalTo(t2.getName()))
+                .body("items.size()", equalTo(3));
+    }
+
+    @Test
     void create()
     {
         try

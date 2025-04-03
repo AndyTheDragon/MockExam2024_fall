@@ -1,12 +1,18 @@
 package dat.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dat.dao.TripDAO;
-import dat.dto.TotalPriceDTO;
-import dat.dto.TripDTO;
-import dat.dto.TripInputDTO;
+import dat.dto.*;
 import dat.enums.TripCategory;
 import dat.exceptions.ApiException;
 import dat.exceptions.DaoException;
+import dat.utils.DataAPIReader;
 import dat.utils.Populator;
 import io.javalin.http.Context;
 import jakarta.persistence.EntityManagerFactory;
@@ -46,10 +52,26 @@ public class TripController
             Integer id = ctx.pathParamAsClass("id", Integer.class)
                     .check(i -> i > 0, "ID must be a positive integer")
                     .getOrThrow((validator) -> new IllegalArgumentException("ID must be a positive integer"));
+            logger.info("Trip ID: " + id);
+            Boolean withItems = ctx.queryParamAsClass("withItems", Boolean.class)
+                    .check(p -> p != null, "withItems is missing")
+                    .getOrDefault(false);
+            logger.info("withItems: " + withItems);
             TripDTO trip = dao.getById(id);
-            ctx.json(trip);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            ObjectNode tripJson = mapper.valueToTree(trip);
+            if (withItems)
+            {
+                List<ItemDTO> items = fetchPackingItems(trip.getCategory());
+                ArrayNode itemsArray = mapper.valueToTree(items);
+                tripJson.set("items", itemsArray);
+            }
+            ctx.json(tripJson);
         } catch (IllegalArgumentException e)
         {
+            logger.error("Illegal argument. ", e);
             throw new ApiException(400, "Invalid ID format", e);
         } catch (DaoException e)
         {
@@ -142,9 +164,35 @@ public class TripController
 
     public void getGuidesTotalPrice(Context ctx)
     {
-        List<TotalPriceDTO> totalPriceList = dao.getGuidesTotalPrice();
-        ctx.json(totalPriceList);
-        throw new ApiException(501, "Not implemented yet");
+        try
+        {
+            List<TotalPriceDTO> totalPriceList = dao.getGuidesTotalPrice();
+            ctx.json(totalPriceList);
+        }
+        catch (DaoException e)
+        {
+            throw new ApiException(404, "No total price found");
+        }
+    }
+
+    public List<ItemDTO> fetchPackingItems(TripCategory tripCategory)
+    {
+        try
+        {
+            DataAPIReader dataAPIReader = new DataAPIReader();
+            String url = "https://packingapi.cphbusinessapps.dk/packinglist/" + tripCategory.toString().toLowerCase();
+            String jsonResponse = dataAPIReader.getDataFromClient(url);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            ItemsResponseDTO itemsResponse = objectMapper.readValue(jsonResponse, ItemsResponseDTO.class);
+            return itemsResponse.getItems();
+        } catch (JsonMappingException e)
+        {
+            throw new ApiException(500, "Error mapping JSON response to DTO", e);
+        } catch (JsonProcessingException e)
+        {
+            throw new ApiException(500, "Error parsing JSON", e);
+        }
     }
 
     private boolean isValidTripCategory(String category)
